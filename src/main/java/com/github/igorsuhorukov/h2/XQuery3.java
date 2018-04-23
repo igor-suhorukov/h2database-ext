@@ -16,10 +16,10 @@ import java.util.Map;
 public class XQuery3 {
 
     public static ResultSet query(String xquery) throws QueryException, IOException {
-        return queryWithParameters(xquery, null);
+        return query(xquery, null);
     }
 
-    public static ResultSet queryWithParameters(String xquery, Map<String, Object> parameters) throws QueryException, IOException {
+    public static ResultSet query(String xquery, Map<String, Object> parameters) throws QueryException, IOException {
         try (QueryProcessor queryProcessor = new QueryProcessor(xquery, new Context())) {
             bindParameters(queryProcessor, parameters);
             Value queryResult = queryProcessor.value();
@@ -29,7 +29,11 @@ public class XQuery3 {
             }
             Item xqResultSet = resultIterator.next();
             String csvResult = Item.toString(xqResultSet.string(null), false, false);
-            return new Csv().read(new StringReader(csvResult), null);
+            if(csvResult!=null && !csvResult.isEmpty()) {
+                return new Csv().read(new StringReader(csvResult.replace("&#xA;","\n")), null);
+            } else {
+                return null;
+            }
         }
     }
 
